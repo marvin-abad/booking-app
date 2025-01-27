@@ -19,6 +19,15 @@ export const createRoom = async (req, res, next) => {
       }
 }
 
+export const updateRoom = async (req, res, next) => {
+      try {
+            const updateRoom = await roomModel.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true }) 
+            res.status(200).json(updateRoom)
+      } catch (err) {
+            next(err)
+      }
+}
+
 export const deleteRoom = async (req, res, next) => {
       try {
             const deleteRoom = await roomModel.findByIdAndDelete(req.params.id)
@@ -32,6 +41,7 @@ export const deleteRoom = async (req, res, next) => {
 export const getRoom = async (req, res, next) => {
       try {
             const room = await roomModel.findById(req.params.id)
+            if (!room) return next(createError(404, "Room not found"))
             res.status(200).json(room)
       }catch (err) {
             next(err)
@@ -40,9 +50,9 @@ export const getRoom = async (req, res, next) => {
 
 export const getAllRoom = async (req, res, next) => {
       try {
-            const AllRooms = await roomModel.find()
-            res.status(200).json(AllRooms)
-      }catch (err) {
+            const rooms = await roomModel.find()
+            res.status(200).json(rooms)
+      } catch (err) {
             next(err)
       }
 }
