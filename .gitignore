@@ -1,9 +1,9 @@
 # Ignore node_modules directory
-/api/node_modules/
+api/node_modules/
 node_modules/
 
 # Ignore environment variables
-.env
+api/.env
 
 # Ignore build/output directories
 dist/
