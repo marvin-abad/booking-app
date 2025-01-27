@@ -1,40 +1,38 @@
+import { useState } from "react";
+import { axiosInstance } from "../../config/axios";
 
-import { useContext, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../../context/AuthContext";
-import { axiosInstance } from "../../axios/axios";
-
-export default function Login() {
-  const [credentials, setCredentials] = useState({
-    username: undefined,
-    password: undefined,
-  });
-
-  const { isFetching, error, dispatch } = useContext(AuthContext);
-  const navigate = useNavigate();
+const Login = () => {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [isFetching, setIsFetching] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleChange = (e) => {
-    setCredentials((prev) => ({ ...prev, [e.target.id]: e.target.value }));
+    const { id, value } = e.target;
+    if (id === "username") setUsername(value);
+    if (id === "password") setPassword(value);
   };
 
-  const handleClick = async (e) => {
-    e.preventDefault();
-    
-    dispatch({ type: "LOGIN_START" });
+  const handleClick = async () => {
+    setIsFetching(true);
+    setError(null);
+
     try {
-      const res = await axiosInstance.post("/api/auth/login", credentials);
-      
-      if (res.data.details) {
-        dispatch({ type: "LOGIN_SUCCESS", payload: res.data.details });
-        navigate("/home");
-      } else {
-        throw new Error("No user details received");
-      }
-    } catch (err) {
-      dispatch({ 
-        type: "LOGIN_FAILURE", 
-        payload: err.response?.data || "Login failed" 
+      const response = await axiosInstance.post("api/auth/login", {
+        username,
+        password,
       });
+
+      // Handle successful login
+      console.log("Login successful:", response.data);
+      localStorage.setItem("user", JSON.stringify(response.data)); // Save user data
+      window.location.href = "/home"; // Redirect to home page
+    } catch (err) {
+      // Handle login error
+      setError(err.response?.data?.message || "Login failed. Please try again.");
+      console.error("Login error:", err);
+    } finally {
+      setIsFetching(false);
     }
   };
 
@@ -57,15 +55,17 @@ export default function Login() {
           className="lInput"
           required
         />
-        <button 
-          disabled={isFetching} 
-          onClick={handleClick} 
+        <button
+          disabled={isFetching}
+          onClick={handleClick}
           className="lButton"
         >
           {isFetching ? "Loading..." : "Login"}
         </button>
-        {error && <span className="error">{error.message || "An error occurred"}</span>}
+        {error && <span className="error">{error}</span>}
       </div>
     </div>
   );
-}
+};
+
+export default Login;
